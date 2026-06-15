@@ -2,19 +2,57 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [showPasswordRules, setShowPasswordRules] = useState(false);
+
+  const hasMinLength = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecialChar = /[^A-Za-z0-9]/.test(password);
+
+  const isPasswordValid =
+    hasMinLength &&
+    hasUppercase &&
+    hasLowercase &&
+    hasNumber &&
+    hasSpecialChar;
 
   async function handleRegister() {
     setLoading(true);
     setMessage("");
+    setSuccess(false);
+
+    if (!name.trim()) {
+      setMessage("Digite seu nome.");
+      setLoading(false);
+      return;
+    }
+
+    if (!email.trim()) {
+      setMessage("Digite seu email.");
+      setLoading(false);
+      return;
+    }
+
+    if (!isPasswordValid) {
+      setShowPasswordRules(true);
+      setMessage("A senha ainda não atende todos os requisitos.");
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -28,12 +66,35 @@ export default function RegisterPage() {
 
     if (error) {
       setMessage(error.message);
+      setSuccess(false);
       setLoading(false);
       return;
     }
 
-    setMessage("Conta criada! Verifique seu email para confirmar o cadastro.");
-    setLoading(false);
+    setMessage("Conta criada com sucesso! Redirecionando para o login...");
+    setSuccess(true);
+
+    setTimeout(() => {
+      router.push("/login");
+    }, 2000);
+  }
+
+  function PasswordRule({
+    valid,
+    text,
+  }: {
+    valid: boolean;
+    text: string;
+  }) {
+    return (
+      <p
+        className={`text-xs transition ${
+          valid ? "text-blue-400" : "text-zinc-500"
+        }`}
+      >
+        {valid ? "✓" : "•"} {text}
+      </p>
+    );
   }
 
   return (
@@ -42,7 +103,13 @@ export default function RegisterPage() {
 
       <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-zinc-950/80 p-8 shadow-[0_0_100px_rgba(37,99,235,0.18)] backdrop-blur-xl">
         <div className="mb-8 text-center">
-          <Image src="/logo.png" alt="Apex" width={56} height={56} className="mx-auto" />
+          <Image
+            src="/logo.png"
+            alt="Apex"
+            width={56}
+            height={56}
+            className="mx-auto"
+          />
 
           <h1 className="mt-6 text-3xl font-bold">Criar Conta</h1>
 
@@ -58,6 +125,7 @@ export default function RegisterPage() {
               type="text"
               placeholder="Seu nome"
               value={name}
+              maxLength={50}
               onChange={(e) => setName(e.target.value)}
               className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 outline-none transition focus:border-blue-500"
             />
@@ -80,9 +148,35 @@ export default function RegisterPage() {
               type="password"
               placeholder="••••••••"
               value={password}
+              onFocus={() => setShowPasswordRules(true)}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 outline-none transition focus:border-blue-500"
             />
+
+            {showPasswordRules && (
+              <div className="mt-3 grid gap-1">
+                <PasswordRule
+                  valid={hasMinLength}
+                  text="Mínimo de 8 caracteres"
+                />
+                <PasswordRule
+                  valid={hasUppercase}
+                  text="Pelo menos 1 letra maiúscula"
+                />
+                <PasswordRule
+                  valid={hasLowercase}
+                  text="Pelo menos 1 letra minúscula"
+                />
+                <PasswordRule
+                  valid={hasNumber}
+                  text="Pelo menos 1 número"
+                />
+                <PasswordRule
+                  valid={hasSpecialChar}
+                  text="Pelo menos 1 caractere especial"
+                />
+              </div>
+            )}
           </div>
 
           <button
@@ -96,14 +190,18 @@ export default function RegisterPage() {
         </form>
 
         {message && (
-          <p className="mt-5 text-center text-sm text-zinc-400">
+          <p
+            className={`mt-5 text-center text-sm font-medium ${
+              success ? "text-blue-400" : "text-red-400"
+            }`}
+          >
             {message}
           </p>
         )}
 
         <p className="mt-6 text-center text-sm text-zinc-500">
           Já possui uma conta?{" "}
-          <a href="/login" className="text-blue-400">
+          <a href="/login" className="text-blue-400 hover:text-blue-300">
             Entrar
           </a>
         </p>

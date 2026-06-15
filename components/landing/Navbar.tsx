@@ -45,14 +45,14 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <a
-            href="#"
+            href="/login"
             className="hidden rounded-xl border border-white/10 px-4 py-2 text-sm text-zinc-300 transition hover:border-blue-500/50 hover:text-white md:block"
           >
             Entrar
           </a>
 
           <a
-            href="#cta"
+            href="/register"
             className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:bg-blue-500 hover:shadow-[0_0_35px_rgba(37,99,235,0.5)] md:px-5"
           >
             Começar

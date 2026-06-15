@@ -33,7 +33,7 @@ export default function CTA() {
 
         <div className="mt-16">
           <a
-            href="#"
+            href="/register"
             className="
               group
               relative

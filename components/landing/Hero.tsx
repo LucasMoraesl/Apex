@@ -59,7 +59,7 @@ export default function Hero() {
             className="mt-10 flex flex-col items-center gap-4 sm:flex-row lg:justify-start"
           >
             <a
-              href="#cta"
+              href="/register"
               className="rounded-2xl bg-blue-600 px-8 py-4 font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-blue-500 hover:shadow-[0_0_55px_rgba(37,99,235,0.5)]"
             >
               Começar Agora
