@@ -3,42 +3,38 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-export default function LoginPage() {
-  const router = useRouter();
-
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
 
-  async function handleLogin() {
+  async function handleResetPassword() {
     setLoading(true);
     setMessage("");
     setSuccess(false);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setMessage("Email ou senha incorretos.");
-      setSuccess(false);
+    if (!email.trim()) {
+      setMessage("Digite seu email.");
       setLoading(false);
       return;
     }
 
-    setMessage("Login realizado com sucesso! Redirecionando...");
-    setSuccess(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
 
-    setTimeout(() => {
-      router.push("/onboarding");
-    }, 1500);
+    if (error) {
+      setMessage("Não foi possível enviar o email de recuperação.");
+      setLoading(false);
+      return;
+    }
+
+    setSuccess(true);
+    setMessage("Enviamos um link de recuperação para o seu email.");
+    setLoading(false);
   }
 
   return (
@@ -47,18 +43,12 @@ export default function LoginPage() {
 
       <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-zinc-950/80 p-8 shadow-[0_0_100px_rgba(37,99,235,0.18)] backdrop-blur-xl">
         <div className="mb-8 text-center">
-          <Image
-            src="/logo.png"
-            alt="Apex"
-            width={56}
-            height={56}
-            className="mx-auto"
-          />
+          <Image src="/logo.png" alt="Apex" width={56} height={56} className="mx-auto" />
 
-          <h1 className="mt-6 text-3xl font-bold">Entrar</h1>
+          <h1 className="mt-6 text-3xl font-bold">Recuperar senha</h1>
 
           <p className="mt-2 text-zinc-400">
-            Continue sua evolução com o Apex.
+            Digite seu email para receber o link de recuperação.
           </p>
         </div>
 
@@ -74,34 +64,13 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
-            <div className="flex items-center justify-between">
-              <label className="text-sm text-zinc-400">Senha</label>
-
-              <Link
-                href="/forgot-password"
-                className="text-sm text-blue-400 hover:text-blue-300"
-              >
-                Esqueci minha senha
-              </Link>
-            </div>
-
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 w-full rounded-xl border border-white/10 bg-black px-4 py-3 outline-none transition focus:border-blue-500"
-            />
-          </div>
-
           <button
             type="button"
-            onClick={handleLogin}
+            onClick={handleResetPassword}
             disabled={loading}
             className="w-full rounded-xl bg-blue-600 py-3 font-semibold transition-all duration-300 hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? "Enviando..." : "Enviar link de recuperação"}
           </button>
         </form>
 
@@ -116,9 +85,9 @@ export default function LoginPage() {
         )}
 
         <p className="mt-6 text-center text-sm text-zinc-500">
-          Ainda não tem conta?{" "}
-          <Link href="/register" className="text-blue-400 hover:text-blue-300">
-            Criar conta
+          Lembrou sua senha?{" "}
+          <Link href="/login" className="text-blue-400 hover:text-blue-300">
+            Voltar para login
           </Link>
         </p>
       </div>
